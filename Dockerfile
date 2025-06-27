@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
     git curl unzip zip libzip-dev pkg-config libssl-dev libcurl4-openssl-dev
 
 # Ép cài đúng version mongodb ext
-RUN pecl install mongodb-1.21.2 && docker-php-ext-enable mongodb
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+
 
 # Các extension Laravel cần
 RUN docker-php-ext-install pdo zip bcmath
