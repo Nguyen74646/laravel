@@ -1,24 +1,28 @@
 FROM php:8.1-fpm
 
-# Cài các extension cần thiết
+# Cài các dependency
 RUN apt-get update && apt-get install -y \
-    git curl unzip zip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql zip gd mbstring
+    git curl zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev libssl-dev pkg-config libcurl4-openssl-dev
+
+# Cài ext cần thiết
+RUN docker-php-ext-install pdo mbstring zip exif pcntl bcmath gd
 
 # Cài ext-mongodb
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Cài composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Cài Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy source vào container
+COPY . /var/www
 
 WORKDIR /var/www
 
-COPY . .
-
+# Cài các gói PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Laravel public chạy ở port 8080 (phải khớp với Railway)
-EXPOSE 8080
+# Laravel key & quyền thư mục
+RUN chmod -R 775 storage bootstrap/cache
 
-# Run Laravel PHP built-in server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+# Laravel dùng cổng 8080 trên Railway
+CMD php artisan serve --host=0.0.0.0 --port=8080
